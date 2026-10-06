@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summative Generator - Deep Learning & CINTA Curriculum</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        cinta: {
+                            teal: '#0d9488',
+                            gold: '#d97706',
+                            emerald: '#059669',
+                            sky: '#0284c7',
+                            indigo: '#4f46e5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Mammoth.js for Word (.docx) Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <!-- PDF.js for PDF Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(55, 65, 81, 0.5);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+                padding: 20px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <div id="app" class="flex-1 flex flex-col md:flex-row min-h-screen">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-full md:w-72 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between z-20 flex-shrink-0 no-print">
+            <div>
+                <!-- Brand Logo & Header -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                            <i class="fa-solid fa-graduation-cap text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-bold text-base leading-tight text-slate-900 dark:text-white">Summative AI</h1>
+                            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Deep Learning & CINTA</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="p-4 space-y-1.5">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
+                        <i class="fa-solid fa-sliders w-5 text-center"></i>
+                        <span data-i18n="navDashboard">Assessment Setup</span>
+                    </button>
+
+                    <button onclick="switchTab('upload')" id="nav-upload" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <i class="fa-solid fa-file-arrow-up w-5 text-center"></i>
+                        <span data-i18n="navUpload">File Context Material</span>
+                        <span id="file-badge" class="hidden ml-auto px-2 py-0.5 text-xs font-bold bg-emerald-500 text-white rounded-full">1</span>
+                    </button>
+
+                    <button onclick="switchTab('prompt')" id="nav-prompt" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <i class="fa-solid fa-code w-5 text-center"></i>
+                        <span data-i18n="navPrompt">Master Prompt</span>
+                    </button>
+
+                    <button onclick="switchTab('history')" id="nav-history" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i>
+                        <span data-i18n="navHistory">Preset Examples</span>
+                    </button>
+
+                    <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <i class="fa-solid fa-key w-5 text-center"></i>
+                        <span data-i18n="navSettings">Gemini API Key</span>
+                    </button>
+                </nav>
+
+                <!-- Curriculum Info Card -->
+                <div class="mx-4 my-2 p-3.5 rounded-xl bg-gradient-to-br from-slate-100 to-emerald-50/50 dark:from-slate-900 dark:to-emerald-950/30 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                    <div class="flex items-center space-x-2 font-semibold text-emerald-700 dark:text-emerald-400">
+                        <i class="fa-solid fa-leaf"></i>
+                        <span data-i18n="cintaInfoTitle">CINTA Ecotheology</span>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed" data-i18n="cintaInfoDesc">
+                        Integrating Love for God, Humanity, Knowledge, Environment, & Nation into holistic assessments.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sidebar Bottom Controls (Language & Theme) -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                <!-- Language Toggle -->
+                <div class="flex items-center justify-between bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl">
+                    <span class="text-xs font-semibold px-2 text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-globe"></i> <span data-i18n="langLabel">Lang</span>
+                    </span>
+                    <div class="flex space-x-1">
+                        <button onclick="setLanguage('id')" id="btn-lang-id" class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all bg-white dark:bg-slate-800 text-emerald-600 shadow-sm">
+                            🇮🇩 ID
+                        </button>
+                        <button onclick="setLanguage('en')" id="btn-lang-en" class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-slate-900 dark:hover:text-white">
+                            🇬🇧 EN
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-slate-600 dark:text-slate-400" data-i18n="themeLabel">Theme Mode</span>
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar">
+            
+            <!-- TOP BANNER HEADER -->
+            <header class="bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 p-4 md:p-6 no-print">
+                <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                                Merdeka Curriculum 2024
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-300">
+                                Deep Learning Framework
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">
+                                CINTA Ecotheology
+                            </span>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="headerTitle">
+                            SUMMATIVE ASSESSMENT GENERATOR
+                        </h2>
+                        <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400" data-i18n="headerSubtitle">
+                            Integrated Deep Learning Pillars (Mindful, Meaningful, Joyful) & Holistic Ecotheology
+                        </p>
+                    </div>
+
+                    <!-- Header Badges / Quick Actions -->
+                    <div class="flex items-center space-x-2">
+                        <button onclick="loadSamplePreset('science')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-flask text-teal-500"></i>
+                            <span data-i18n="presetScience">Preset IPA SMP</span>
+                        </button>
+                        <button onclick="loadSamplePreset('english')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-language text-indigo-500"></i>
+                            <span data-i18n="presetEnglish">Preset English SMA</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN TAB VIEW CONTAINERS -->
+            <div class="p-4 md:p-6 max-w-7xl w-full mx-auto flex-1">
+                
+                <!-- TAB 1: DASHBOARD & ASSESSMENT BUILDER -->
+                <div id="tab-dashboard" class="tab-content grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- LEFT COLUMN: ASSESSMENT METADATA & TP -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                                <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-school text-emerald-600"></i>
+                                    <span data-i18n="sectionGeneral">1. Educational Context</span>
+                                </h3>
+                                <span class="text-xs text-slate-400" data-i18n="requiredFields">Required *</span>
+                            </div>
+
+                            <!-- Education Level Selector -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2" data-i18n="lblEducationLevel">
+                                    Education Level
+                                </label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button type="button" onclick="setEducationLevel('PAUD')" id="level-PAUD" class="level-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-emerald-500 transition">PAUD</button>
+                                    <button type="button" onclick="setEducationLevel('SD')" id="level-SD" class="level-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-emerald-500 transition">SD / MI</button>
+                                    <button type="button" onclick="setEducationLevel('SMP')" id="level-SMP" class="level-btn py-2 px-3 rounded-xl border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition">SMP / MTs</button>
+                                    <button type="button" onclick="setEducationLevel('SMA')" id="level-SMA" class="level-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-emerald-500 transition">SMA/MA/SMK</button>
+                                </div>
+                            </div>
+
+                            <!-- Phase & Grade Row -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblPhase">
+                                        Merdeka Phase
+                                    </label>
+                                    <select id="select-phase" onchange="updatePhaseAndGrade()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="Fase A">Fase A (Kelas 1-2)</option>
+                                        <option value="Fase B">Fase B (Kelas 3-4)</option>
+                                        <option value="Fase C">Fase C (Kelas 5-6)</option>
+                                        <option value="Fase D" selected>Fase D (Kelas 7-9)</option>
+                                        <option value="Fase E">Fase E (Kelas 10)</option>
+                                        <option value="Fase F">Fase F (Kelas 11-12)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblGrade">
+                                        Grade / Class
+                                    </label>
+                                    <select id="select-grade" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="7">Kelas 7</option>
+                                        <option value="8" selected>Kelas 8</option>
+                                        <option value="9">Kelas 9</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Subject & Topic -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblSubject">
+                                        Subject (Mata Pelajaran)
+                                    </label>
+                                    <input type="text" id="input-subject" value="IPA / Ilmu Pengetahuan Alam" placeholder="e.g. Bahasa Inggris, PAI, IPA" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblTopic">
+                                        Theme / Topic / Sub-topic
+                                    </label>
+                                    <input type="text" id="input-topic" value="Fotosintesis, Ekosistem & Kelestarian Lingkungan Hidup" placeholder="e.g. Fotosintesis & Ekologi" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Learning Objectives (TP) Textarea -->
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" data-i18n="lblTP">
+                                        Learning Objectives (Tujuan Pembelajaran - TP)
+                                    </label>
+                                    <button type="button" onclick="suggestLearningObjectives()" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                        <span data-i18n="btnSuggestTP">Auto Suggest TP</span>
+                                    </button>
+                                </div>
+                                <textarea id="input-tp" rows="3" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none custom-scrollbar" placeholder="Peserta didik mampu menganalisis proses fotosintesis dan dampaknya terhadap keseimbangan ekosistem serta menunjukkan sikap kepedulian lingkungan (Ecotheology)...">Peserta didik mampu menganalisis proses fotosintesis, keterkaitannya dengan siklus oksigen, serta merancang tindakan nyata menjaga kelestarian tumbuhan sebagai wujud rasa syukur dan cinta terhadap lingkungan ciptaan Tuhan.</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Question Type & Items Count -->
+                        <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                <i class="fa-solid fa-list-check text-teal-600"></i>
+                                <span data-i18n="sectionFormat">2. Assessment Item Specifications</span>
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblQuestionType">
+                                        Primary Question Type
+                                    </label>
+                                    <select id="select-question-type" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="mixed" selected>Mixed Format (PG + PG Kompleks + Uraian)</option>
+                                        <option value="multiple_choice">Pilihan Ganda (Multiple Choice)</option>
+                                        <option value="complex_mc">Pilihan Ganda Kompleks (AKM Style)</option>
+                                        <option value="essay">Uraian / Essay High Order Thinking</option>
+                                        <option value="matching">Menjodohkan (Matching)</option>
+                                        <option value="short_answer">Isian Singkat</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblTotalCount">
+                                        Total Question Count: <span id="lbl-count-val" class="text-emerald-600 font-extrabold">10</span>
+                                    </label>
+                                    <input type="range" id="input-count" min="5" max="30" step="1" value="10" oninput="document.getElementById('lbl-count-val').innerText = this.value" class="w-full accent-emerald-600 cursor-pointer">
+                                    <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                        <span>5 items</span>
+                                        <span>15 items</span>
+                                        <span>30 items</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: CURRICULUM APPROACH & COGNITIVE TAXONOMY -->
+                    <div class="lg:col-span-5 space-y-6">
+                        
+                        <!-- Pedagogical Framework Box -->
+                        <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                                <i class="fa-solid fa-brain text-amber-500"></i>
+                                <span data-i18n="sectionPedagogy">3. Curriculum & Pedagogical Pillars</span>
+                            </h3>
+
+                            <!-- Approach Selection -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2" data-i18n="lblApproach">
+                                    Curriculum Framework Focus
+                                </label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition">
+                                        <input type="radio" name="approach" value="integrated" checked class="accent-emerald-600">
+                                        <div class="ml-3">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white block" data-i18n="appIntegrated">Integrated (Deep Learning & CINTA)</span>
+                                            <span class="text-[11px] text-slate-500" data-i18n="appIntegratedSub">Holistic combination of Deep Learning pillars + Ecotheology values</span>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition">
+                                        <input type="radio" name="approach" value="deep_learning" class="accent-emerald-600">
+                                        <div class="ml-3">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white block" data-i18n="appDeepLearning">Deep Learning Pillars Only</span>
+                                            <span class="text-[11px] text-slate-500" data-i18n="appDeepLearningSub">Mindful, Meaningful, & Joyful Learning frameworks</span>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition">
+                                        <input type="radio" name="approach" value="cinta" class="accent-emerald-600">
+                                        <div class="ml-3">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white block" data-i18n="appCinta">CINTA Ecotheology Only</span>
+                                            <span class="text-[11px] text-slate-500" data-i18n="appCintaSub">5 CINTA Dimensions (God, Humanity, Knowledge, Nature, Nation)</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Bloom's Cognitive Levels -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2" data-i18n="lblBloom">
+                                    Bloom's Cognitive Taxonomy target
+                                </label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <label class="flex items-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                        <input type="checkbox" value="C1" class="accent-emerald-600 mr-1.5"> C1 Mengingat
+                                    </label>
+                                    <label class="flex items-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                        <input type="checkbox" value="C2" checked class="accent-emerald-600 mr-1.5"> C2 Memahami
+                                    </label>
+                                    <label class="flex items-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                        <input type="checkbox" value="C3" checked class="accent-emerald-600 mr-1.5"> C3 Menerapkan
+                                    </label>
+                                    <label class="flex items-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                        <input type="checkbox" value="C4" checked class="accent-emerald-600 mr-1.5"> C4 Menganalisis
+                                    </label>
+                                    <label class="flex items-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                        <input type="checkbox" value="C5" checked class="accent-emerald-600 mr-1.5"> C5 Mengevaluasi
+                                    </label>
+                                    <label class="flex items-center text-xs p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                        <input type="checkbox" value="C6" class="accent-emerald-600 mr-1.5"> C6 Mencipta
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Difficulty Distribution -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" data-i18n="lblDifficulty">
+                                        Item Difficulty Ratio
+                                    </label>
+                                    <span id="diff-status" class="text-[11px] font-bold text-emerald-600">30% - 50% - 20% = 100%</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <span class="text-[10px] text-slate-500 block" data-i18n="diffEasy">Easy (%)</span>
+                                        <input type="number" id="diff-easy" value="30" min="0" max="100" onchange="validateDifficulty()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-xs text-center font-bold">
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-slate-500 block" data-i18n="diffMedium">Medium (%)</span>
+                                        <input type="number" id="diff-medium" value="50" min="0" max="100" onchange="validateDifficulty()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-xs text-center font-bold">
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-slate-500 block" data-i18n="diffHard">Hard (%)</span>
+                                        <input type="number" id="diff-hard" value="20" min="0" max="100" onchange="validateDifficulty()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 text-xs text-center font-bold">
+                                    </div>
+                                </div>
+                                <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden flex mt-2">
+                                    <div id="bar-easy" class="bg-emerald-500 h-full transition-all" style="width: 30%"></div>
+                                    <div id="bar-medium" class="bg-amber-500 h-full transition-all" style="width: 50%"></div>
+                                    <div id="bar-hard" class="bg-rose-500 h-full transition-all" style="width: 20%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Feature Toggles -->
+                            <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                <label class="flex items-center justify-between text-xs font-medium cursor-pointer">
+                                    <span data-i18n="toggleAnswerKey">Include Answer Key & Explanations</span>
+                                    <input type="checkbox" id="chk-key" checked class="accent-emerald-600 w-4 h-4 rounded">
+                                </label>
+                                <label class="flex items-center justify-between text-xs font-medium cursor-pointer">
+                                    <span data-i18n="toggleRubric">Include Scoring Rubric</span>
+                                    <input type="checkbox" id="chk-rubric" checked class="accent-emerald-600 w-4 h-4 rounded">
+                                </label>
+                                <label class="flex items-center justify-between text-xs font-medium cursor-pointer">
+                                    <span data-i18n="toggleMapping">Map to CINTA & Pancasila Profiles</span>
+                                    <input type="checkbox" id="chk-mapping" checked class="accent-emerald-600 w-4 h-4 rounded">
+                                </label>
+                            </div>
+
+                        </div>
+
+                        <!-- GENERATE ACTION BUTTONS -->
+                        <div class="space-y-3">
+                            <button onclick="generateMasterPrompt()" class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center space-x-2 transition-all transform active:scale-98">
+                                <i class="fa-solid fa-gears"></i>
+                                <span data-i18n="btnGeneratePrompt">1. Build Master Prompt</span>
+                            </button>
+
+                            <button onclick="executeGeminiAI()" class="w-full py-3.5 px-4 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-teal-600/25 flex items-center justify-center space-x-2 transition-all transform active:scale-98">
+                                <i class="fa-solid fa-sparkles text-amber-300"></i>
+                                <span data-i18n="btnExecuteAI">2. Generate Assessment with Gemini AI</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TAB 2: FILE UPLOAD MENU -->
+                <div id="tab-upload" class="tab-content hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i>
+                                <span data-i18n="uploadTitle">Upload Learning Material / Assessment Reference</span>
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="uploadDesc">
+                                Upload textbooks, syllabus, teaching notes, or worksheets (.pdf, .docx, .txt, .png, .jpg) to serve as precise context for assessment generation.
+                            </p>
+                        </div>
+
+                        <!-- Dropzone Area -->
+                        <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-2xl p-8 text-center bg-slate-50/50 dark:bg-slate-900/50 cursor-pointer transition space-y-3">
+                            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp" onchange="handleFileSelect(event)">
+                            <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-file-contract"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-200" data-i18n="dropText">
+                                    Click or Drag & Drop File Here
+                                </p>
+                                <p class="text-xs text-slate-400 mt-1" data-i18n="dropFormats">
+                                    Supports PDF, DOCX (Word), TXT, PNG, JPG (Max 10MB)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- File Context Preview Panel -->
+                        <div id="file-preview-card" class="hidden bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <div class="flex items-center space-x-3">
+                                    <i id="file-icon" class="fa-solid fa-file-lines text-emerald-600 text-xl"></i>
+                                    <div>
+                                        <h4 id="file-name" class="font-bold text-sm text-slate-900 dark:text-white">document.docx</h4>
+                                        <span id="file-size" class="text-xs text-slate-400">120 KB • Extracted 1,450 words</span>
+                                    </div>
+                                </div>
+                                <button onclick="removeFileContext()" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-xs font-bold">
+                                    <i class="fa-solid fa-trash-can"></i> <span data-i18n="btnRemove">Remove</span>
+                                </button>
+                            </div>
+
+                            <!-- Extracted Content Box -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-i18n="lblExtractedContent">Extracted Text Content Snippet:</label>
+                                <textarea id="file-extracted-text" rows="6" class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-700 dark:text-slate-300 custom-scrollbar focus:outline-none" readonly></textarea>
+                            </div>
+
+                            <!-- Quick File Action Buttons -->
+                            <div class="flex flex-wrap gap-2 pt-2">
+                                <button onclick="injectFileTextToTP()" class="px-3 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-200 transition">
+                                    <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> <span data-i18n="btnInjectTP">Inject to Learning Objectives</span>
+                                </button>
+                                <button onclick="analyzeFileWithAI()" class="px-3 py-2 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 text-xs font-bold hover:bg-teal-200 transition">
+                                    <i class="fa-solid fa-magnifying-glass-chart mr-1"></i> <span data-i18n="btnAnalyzeContext">Analyze Key Points with AI</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: MASTER PROMPT VIEW -->
+                <div id="tab-prompt" class="tab-content hidden space-y-4">
+                    <div class="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-terminal text-indigo-500"></i>
+                                    <span data-i18n="promptTitle">Engineered Master Prompt</span>
+                                </h3>
+                                <p class="text-xs text-slate-400" data-i18n="promptSubtitle">Copy this prompt directly into ChatGPT, Claude, or execute via Gemini below.</p>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                <button onclick="copyMasterPrompt()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                                    <i class="fa-regular fa-copy"></i>
+                                    <span data-i18n="btnCopyPrompt">Copy Prompt</span>
+                                </button>
+                                <button onclick="executeGeminiAI()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white shadow-md transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span data-i18n="btnSendGemini">Run Gemini AI</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Prompt Codebox -->
+                        <div class="relative">
+                            <textarea id="prompt-output-box" rows="18" class="w-full bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs font-mono border border-slate-800 focus:outline-none custom-scrollbar leading-relaxed" readonly>Click "1. Build Master Prompt" on the Assessment Setup tab to generate the full structured prompt.</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: PRESET EXAMPLES & HISTORY -->
+                <div id="tab-history" class="tab-content hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bookmark text-amber-500"></i>
+                            <span data-i18n="presetTitle">Curriculum Sample Presets (Deep Learning & CINTA)</span>
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Preset Card 1 -->
+                            <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">SMP / Phase D</span>
+                                    <span class="text-xs font-semibold text-slate-500">IPA / Science</span>
+                                </div>
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Fotosintesis & Stewardship Ecosystem</h4>
+                                <p class="text-xs text-slate-500">Focus on CINTA (Love for Environment) & Mindful Learning observation of plant photosynthesis.</p>
+                                <button onclick="loadSamplePreset('science')" class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Load Preset →</button>
+                            </div>
+
+                            <!-- Preset Card 2 -->
+                            <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">SMA / Phase E</span>
+                                    <span class="text-xs font-semibold text-slate-500">Bahasa Inggris</span>
+                                </div>
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Analytical Exposition Text on Eco-Ethics</h4>
+                                <p class="text-xs text-slate-500">Focus on Deep Learning (Meaningful) with high HOTS essay on climate action & critical thinking.</p>
+                                <button onclick="loadSamplePreset('english')" class="mt-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Load Preset →</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: GEMINI API SETTINGS -->
+                <div id="tab-settings" class="tab-content hidden space-y-6">
+                    <div class="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 max-w-2xl">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-key text-emerald-600"></i>
+                            <span data-i18n="settingsTitle">Gemini API Key Settings</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 leading-relaxed" data-i18n="settingsDesc">
+                            You can provide your own Gemini API key for dedicated rate limits, or leave blank to use the standard execution environment.
+                        </p>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1" data-i18n="lblApiKey">
+                                Custom Gemini API Key
+                            </label>
+                            <input type="password" id="input-api-key" placeholder="AIzaSy..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </div>
+
+                        <button onclick="saveApiKey()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+                            <span data-i18n="btnSaveKey">Save Settings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GENERATED ASSESSMENT RESULT DISPLAY PANEL -->
+                <div id="result-container" class="mt-8 bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg space-y-4 hidden">
+                    
+                    <!-- Result Actions Bar -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4 no-print">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white" data-i18n="resultTitle">
+                                Generated Summative Assessment Document
+                            </h3>
+                        </div>
+
+                        <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+                            <button onclick="copyGeneratedResult()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5">
+                                <i class="fa-regular fa-copy"></i>
+                                <span data-i18n="btnCopyResult">Copy Text</span>
+                            </button>
+                            <button onclick="printAssessmentDocument()" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-xs font-bold text-white shadow-sm transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-print"></i>
+                                <span data-i18n="btnPrint">Print / PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rendered Markdown Output -->
+                    <div id="print-area" class="prose dark:prose-invert max-w-none text-sm leading-relaxed p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-200/50 dark:border-slate-800/50 custom-scrollbar overflow-x-auto">
+                        <div id="markdown-result-body"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FOOTER CREDIT BANNER -->
+            <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-4 px-6 mt-auto text-xs text-slate-500 no-print">
+                <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
+                    <div>
+                        <span class="font-bold text-slate-700 dark:text-slate-300">Summative Generator AI</span> •
+                        <span data-i18n="footerCredit">Specialist & Developer:</span> 
+                        <strong class="text-emerald-600 dark:text-emerald-400">Ahmad Sudi Laksana, S.Pd., Gr.</strong> 
+                        (MTs Negeri 1 Kota Malang - Jawa Timur)
+                    </div>
+                    <div class="text-[11px] text-slate-400">
+                        Merdeka Curriculum • Deep Learning • CINTA Holistic Ecotheology Framework
+                    </div>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        
+        // APP STATE
+        const state = {
+            currentLang: 'id',
+            darkMode: false,
+            educationLevel: 'SMP',
+            phase: 'Fase D',
+            grade: '8',
+            subject: 'IPA / Ilmu Pengetahuan Alam',
+            topic: 'Fotosintesis, Ekosistem & Kelestarian Lingkungan Hidup',
+            learningObjectives: 'Peserta didik mampu menganalisis proses fotosintesis, keterkaitannya dengan siklus oksigen, serta merancang tindakan nyata menjaga kelestarian tumbuhan sebagai wujud rasa syukur dan cinta terhadap lingkungan ciptaan Tuhan.',
+            questionType: 'mixed',
+            questionCount: 10,
+            curriculumApproach: 'integrated',
+            bloomsTaxonomy: ['C2', 'C3', 'C4', 'C5'],
+            difficulty: { easy: 30, medium: 50, hard: 20 },
+            toggles: { answerKey: true, scoringRubric: true, cintaMapping: true },
+            fileContext: { name: '', text: '', type: '' },
+            customApiKey: '',
+            generatedPromptText: '',
+            generatedResultText: ''
+        };
+
+        // BILINGUAL DICTIONARY (ID & EN)
+        const i18n = {
+            id: {
+                navDashboard: "Pengaturan Asesmen",
+                navUpload: "Unggah Materi/Berkas",
+                navPrompt: "Master Prompt Engine",
+                navHistory: "Contoh Preset",
+                navSettings: "Kunci API Gemini",
+                cintaInfoTitle: "Pendekatan CINTA Ecotheology",
+                cintaInfoDesc: "Mengintegrasikan Cinta Tuhan, Sesama, Ilmu, Lingkungan & Bangsa dalam soal sumatif.",
+                langLabel: "Bahasa",
+                themeLabel: "Mode Tampilan",
+                headerTitle: "SUMMATIVE ASSESSMENT GENERATOR",
+                headerSubtitle: "Terintegrasi Kurikulum Merdeka, Deep Learning (Mindful, Meaningful, Joyful) & CINTA Ecotheology",
+                presetScience: "Preset IPA SMP",
+                presetEnglish: "Preset B. Inggris SMA",
+                sectionGeneral: "1. Konteks Pendidikan",
+                requiredFields: "Wajib diisi *",
+                lblEducationLevel: "Jenjang Pendidikan",
+                lblPhase: "Fase Kurikulum Merdeka",
+                lblGrade: "Kelas",
+                lblSubject: "Mata Pelajaran",
+                lblTopic: "Tema / Topik / Sub-Topik",
+                lblTP: "Tujuan Pembelajaran (TP)",
+                btnSuggestTP: "Saran TP Otomatis",
+                sectionFormat: "2. Spesifikasi Bentuk Soal",
+                lblQuestionType: "Bentuk Soal Utama",
+                lblTotalCount: "Jumlah Butir Soal",
+                sectionPedagogy: "3. Pilar Kurikulum & Pedagogi",
+                lblApproach: "Fokus Kerangka Kurikulum",
+                appIntegrated: "Terintegrasi (Deep Learning & CINTA)",
+                appIntegratedSub: "Kombinasi Mindful, Meaningful, Joyful & Nilai Ecotheology",
+                appDeepLearning: "Pilar Deep Learning Saja",
+                appDeepLearningSub: "Pendekatan Mindful, Meaningful, & Joyful Learning",
+                appCinta: "Dimensi CINTA Ecotheology Saja",
+                appCintaSub: "5 Dimensi CINTA (Tuhan, Sesama, Ilmu, Alam, Bangsa)",
+                lblBloom: "Target Taksonomi Bloom",
+                lblDifficulty: "Rasio Tingkat Kesukaran",
+                diffEasy: "Mudah (%)",
+                diffMedium: "Sedang (%)",
+                diffHard: "Sukar (%)",
+                toggleAnswerKey: "Sertakan Kunci Jawaban & Pembahasan",
+                toggleRubric: "Sertakan Rubrik Penilaian / Pedoman Penskoran",
+                toggleMapping: "Sertakan Pemetaan Profil Pancasila & Dimensi CINTA",
+                btnGeneratePrompt: "1. Buat Master Prompt Engine",
+                btnExecuteAI: "2. Generasi Asesmen dengan AI Gemini",
+                uploadTitle: "Unggah Dokumen / Bahan Ajar Referensi",
+                uploadDesc: "Unggah modul, buku teks, atau ringkasan materi (.pdf, .docx, .txt, .png, .jpg) sebagai konteks referensi pembuatan soal.",
+                dropText: "Klik atau Seret & Lepas Berkas di Sini",
+                dropFormats: "Mendukung PDF, Word (.docx), TXT, Gambar PNG/JPG (Maks 10MB)",
+                lblExtractedContent: "Hasil Ekstraksi Teks Materi:",
+                btnRemove: "Hapus",
+                btnInjectTP: "Sisipkan ke Tujuan Pembelajaran (TP)",
+                btnAnalyzeContext: "Analisis Poin Penting dengan AI",
+                promptTitle: "Master Prompt yang Dihasilkan",
+                promptSubtitle: "Salin prompt ini ke AI atau jalankan langsung melalui Gemini di bawah.",
+                btnCopyPrompt: "Salin Prompt",
+                btnSendGemini: "Jalankan Gemini AI",
+                presetTitle: "Contoh Preset Asesmen Kurikulum",
+                settingsTitle: "Pengaturan Kunci API Gemini",
+                settingsDesc: "Masukkan kunci API Gemini Anda sendiri jika ingin kuota khusus, atau kosongkan untuk menggunakan sistem.",
+                lblApiKey: "Kunci API Gemini",
+                btnSaveKey: "Simpan Pengaturan",
+                resultTitle: "Naskah Soal Sumatif Hasil AI",
+                btnCopyResult: "Salin Teks Naskah",
+                btnPrint: "Cetak / Simpan PDF",
+                footerCredit: "Spesialis Asesmen & Pengembang AI:"
+            },
+            en: {
+                navDashboard: "Assessment Setup",
+                navUpload: "Upload Material",
+                navPrompt: "Master Prompt Engine",
+                navHistory: "Sample Presets",
+                navSettings: "Gemini API Key",
+                cintaInfoTitle: "CINTA Ecotheology Approach",
+                cintaInfoDesc: "Integrating Love for God, Humanity, Knowledge, Nature & Nation into summative items.",
+                langLabel: "Language",
+                themeLabel: "Theme Mode",
+                headerTitle: "SUMMATIVE ASSESSMENT GENERATOR",
+                headerSubtitle: "Integrated Merdeka Curriculum, Deep Learning Pillars (Mindful, Meaningful, Joyful) & Ecotheology",
+                presetScience: "Preset SMP Science",
+                presetEnglish: "Preset SMA English",
+                sectionGeneral: "1. Educational Context",
+                requiredFields: "Required *",
+                lblEducationLevel: "Education Level",
+                lblPhase: "Merdeka Curriculum Phase",
+                lblGrade: "Grade / Class",
+                lblSubject: "Subject Name",
+                lblTopic: "Theme / Topic / Sub-topic",
+                lblTP: "Learning Objectives (TP)",
+                btnSuggestTP: "Auto Suggest TP",
+                sectionFormat: "2. Assessment Item Specifications",
+                lblQuestionType: "Primary Question Type",
+                lblTotalCount: "Total Item Count",
+                sectionPedagogy: "3. Curriculum & Pedagogical Pillars",
+                lblApproach: "Framework Focus",
+                appIntegrated: "Integrated (Deep Learning & CINTA)",
+                appIntegratedSub: "Mindful, Meaningful, Joyful & Ecotheology values",
+                appDeepLearning: "Deep Learning Pillars Only",
+                appDeepLearningSub: "Mindful, Meaningful, & Joyful Learning framework",
+                appCinta: "CINTA Ecotheology Only",
+                appCintaSub: "5 Dimensions of CINTA (God, Humanity, Knowledge, Nature, Nation)",
+                lblBloom: "Bloom's Taxonomy Target",
+                lblDifficulty: "Item Difficulty Ratio",
+                diffEasy: "Easy (%)",
+                diffMedium: "Medium (%)",
+                diffHard: "Hard (%)",
+                toggleAnswerKey: "Include Answer Key & Explanations",
+                toggleRubric: "Include Scoring Rubric / Evaluation Guidelines",
+                toggleMapping: "Map to Pancasila & CINTA Dimensions",
+                btnGeneratePrompt: "1. Build Master Prompt Engine",
+                btnExecuteAI: "2. Generate Assessment with Gemini AI",
+                uploadTitle: "Upload Reference Material / Document",
+                uploadDesc: "Upload textbook excerpts, teaching modules, or notes (.pdf, .docx, .txt, .png, .jpg) as context.",
+                dropText: "Click or Drag & Drop File Here",
+                dropFormats: "Supports PDF, DOCX (Word), TXT, PNG/JPG Images (Max 10MB)",
+                lblExtractedContent: "Extracted Reference Content Snippet:",
+                btnRemove: "Remove",
+                btnInjectTP: "Inject to Learning Objectives (TP)",
+                btnAnalyzeContext: "Analyze Key Points with AI",
+                promptTitle: "Engineered Master Prompt",
+                promptSubtitle: "Copy this prompt directly or execute via Gemini AI.",
+                btnCopyPrompt: "Copy Prompt",
+                btnSendGemini: "Run Gemini AI",
+                presetTitle: "Sample Assessment Presets",
+                settingsTitle: "Gemini API Key Settings",
+                settingsDesc: "Provide your custom Gemini API key or leave empty to use default system.",
+                lblApiKey: "Gemini API Key",
+                btnSaveKey: "Save Settings",
+                resultTitle: "Generated Summative Assessment Script",
+                btnCopyResult: "Copy Text Script",
+                btnPrint: "Print / Save as PDF",
+                footerCredit: "Assessment Specialist & AI Developer:"
+            }
+        };
+
+        
+        function setLanguage(lang) {
+            state.currentLang = lang;
+            
+            // Toggle active lang buttons
+            document.getElementById('btn-lang-id').className = lang === 'id' 
+                ? "px-2.5 py-1 text-xs font-bold rounded-lg transition-all bg-white dark:bg-slate-800 text-emerald-600 shadow-sm"
+                : "px-2.5 py-1 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-slate-900 dark:hover:text-white";
+                
+            document.getElementById('btn-lang-en').className = lang === 'en' 
+                ? "px-2.5 py-1 text-xs font-bold rounded-lg transition-all bg-white dark:bg-slate-800 text-emerald-600 shadow-sm"
+                : "px-2.5 py-1 text-xs font-bold rounded-lg transition-all text-slate-500 hover:text-slate-900 dark:hover:text-white";
+
+            // Update all element text with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+        }
+
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (state.darkMode) {
+                html.classList.add('dark');
+                html.classList.remove('light');
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.className = "nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors";
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) {
+                activeBtn.className = "nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400";
+            }
+        }
+
+
+        function setEducationLevel(lvl) {
+            state.educationLevel = lvl;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.className = "level-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-emerald-500 transition";
+            });
+            const activeBtn = document.getElementById(`level-${lvl}`);
+            if (activeBtn) {
+                activeBtn.className = "level-btn py-2 px-3 rounded-xl border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition";
+            }
+
+            const selectPhase = document.getElementById('select-phase');
+            const selectGrade = document.getElementById('select-grade');
+
+            if (lvl === 'PAUD') {
+                selectPhase.value = 'Fase Fondasi';
+                selectGrade.innerHTML = `<option value="PAUD B">Kelompok B (5-6 Tahun)</option>`;
+            } else if (lvl === 'SD') {
+                selectPhase.value = 'Fase B';
+                selectGrade.innerHTML = `<option value="1">Kelas 1</option><option value="2">Kelas 2</option><option value="3" selected>Kelas 3</option><option value="4">Kelas 4</option><option value="5">Kelas 5</option><option value="6">Kelas 6</option>`;
+            } else if (lvl === 'SMP') {
+                selectPhase.value = 'Fase D';
+                selectGrade.innerHTML = `<option value="7">Kelas 7</option><option value="8" selected>Kelas 8</option><option value="9">Kelas 9</option>`;
+            } else if (lvl === 'SMA') {
+                selectPhase.value = 'Fase E';
+                selectGrade.innerHTML = `<option value="10" selected>Kelas 10</option><option value="11">Kelas 11</option><option value="12">Kelas 12</option>`;
+            }
+        }
+
+        function updatePhaseAndGrade() {
+            state.phase = document.getElementById('select-phase').value;
+        }
+
+        function suggestLearningObjectives() {
+            const subject = document.getElementById('input-subject').value || "IPA";
+            const topic = document.getElementById('input-topic').value || "Fotosintesis";
+            const isEn = state.currentLang === 'en';
+
+            const samples = isEn ? [
+                `Students are able to analyze the mechanism of ${topic} in ${subject}, explain its ecological significance, and demonstrate environmental care (CINTA Ecotheology) by designing a plan to protect local flora.`,
+                `Students demonstrate a deep understanding of ${topic}, evaluating data from experiments, and reflecting on human moral stewardship towards nature and society.`
+            ] : [
+                `Peserta didik mampu menganalisis konsep ${topic} pada mata pelajaran ${subject}, serta merancang aksi nyata pemeliharaan ekosistem sebagai bentuk perwujudan nilai CINTA (Cinta Alam & Lingkungan Hidup).`,
+                `Peserta didik dapat mengevaluasi fenomena ${topic}, mengaitkannya dengan keteraturan alam ciptaan Tuhan, serta mengomunikasikan gagasan solusi kelestarian lingkungan secara kritis dan santun.`
+            ];
+
+            document.getElementById('input-tp').value = samples[Math.floor(Math.random() * samples.length)];
+        }
+
+        function validateDifficulty() {
+            const easy = parseInt(document.getElementById('diff-easy').value) || 0;
+            const medium = parseInt(document.getElementById('diff-medium').value) || 0;
+            const hard = parseInt(document.getElementById('diff-hard').value) || 0;
+            const sum = easy + medium + hard;
+
+            document.getElementById('bar-easy').style.width = `${easy}%`;
+            document.getElementById('bar-medium').style.width = `${medium}%`;
+            document.getElementById('bar-hard').style.width = `${hard}%`;
+
+            const statusEl = document.getElementById('diff-status');
+            statusEl.innerText = `${easy}% - ${medium}% - ${hard}% = ${sum}%`;
+            if (sum === 100) {
+                statusEl.className = "text-[11px] font-bold text-emerald-600 dark:text-emerald-400";
+            } else {
+                statusEl.className = "text-[11px] font-bold text-rose-500 animate-bounce";
+            }
+            state.difficulty = { easy, medium, hard };
+        }
+
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const nameEl = document.getElementById('file-name');
+            const sizeEl = document.getElementById('file-size');
+            const textEl = document.getElementById('file-extracted-text');
+            const previewCard = document.getElementById('file-preview-card');
+            const badge = document.getElementById('file-badge');
+
+            nameEl.innerText = file.name;
+            sizeEl.innerText = `${(file.size / 1024).toFixed(1)} KB • Reading file...`;
+            previewCard.classList.remove('hidden');
+
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            if (extension === 'txt') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    textEl.value = text;
+                    state.fileContext = { name: file.name, text: text, type: 'txt' };
+                    sizeEl.innerText = `${(file.size / 1024).toFixed(1)} KB • Extracted ${text.split(/\s+/).length} words`;
+                    badge.classList.remove('hidden');
+                };
+                reader.readAsText(file);
+            } else if (extension === 'docx') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    mammoth.extractRawText({ arrayBuffer: e.target.result })
+                        .then(function(result) {
+                            const text = result.value;
+                            textEl.value = text;
+                            state.fileContext = { name: file.name, text: text, type: 'docx' };
+                            sizeEl.innerText = `${(file.size / 1024).toFixed(1)} KB • Extracted ${text.split(/\s+/).length} words`;
+                            badge.classList.remove('hidden');
+                        })
+                        .catch(function(err) {
+                            textEl.value = "Error parsing DOCX file: " + err.message;
+                        });
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (extension === 'pdf') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const typedarray = new Uint8Array(e.target.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                        let totalPages = pdf.numPages;
+                        let extractedText = "";
+                        let pagePromises = [];
+
+                        for (let i = 1; i <= totalPages; i++) {
+                            pagePromises.push(pdf.getPage(i).then(function(page) {
+                                return page.getTextContent().then(function(textContent) {
+                                    return textContent.items.map(s => s.str).join(' ');
+                                });
+                            }));
+                        }
+
+                        Promise.all(pagePromises).then(function(pagesText) {
+                            extractedText = pagesText.join('\n\n');
+                            textEl.value = extractedText;
+                            state.fileContext = { name: file.name, text: extractedText, type: 'pdf' };
+                            sizeEl.innerText = `${(file.size / 1024).toFixed(1)} KB • Extracted ${totalPages} PDF pages (${extractedText.split(/\s+/).length} words)`;
+                            badge.classList.remove('hidden');
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Data = e.target.result;
+                    textEl.value = `[Image Attached: ${file.name}]\nBase64 Data loaded for Multimodal AI Analysis.`;
+                    state.fileContext = { name: file.name, text: `[Image File Context: ${file.name}]`, base64: base64Data, type: 'image' };
+                    sizeEl.innerText = `${(file.size / 1024).toFixed(1)} KB • Image ready for Gemini Multimodal OCR`;
+                    badge.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeFileContext() {
+            state.fileContext = { name: '', text: '', type: '' };
+            document.getElementById('file-preview-card').classList.add('hidden');
+            document.getElementById('file-badge').classList.add('hidden');
+            document.getElementById('file-input').value = '';
+        }
+
+        function injectFileTextToTP() {
+            if (!state.fileContext.text) return;
+            const snippet = state.fileContext.text.slice(0, 300).replace(/\n/g, ' ');
+            document.getElementById('input-tp').value += `\n[Reference Material: ${snippet}...]`;
+            switchTab('dashboard');
+        }
+
+
+        function generateMasterPrompt() {
+            // Read form inputs
+            state.subject = document.getElementById('input-subject').value || 'IPA';
+            state.topic = document.getElementById('input-topic').value || 'Fotosintesis';
+            state.learningObjectives = document.getElementById('input-tp').value || '';
+            state.questionType = document.getElementById('select-question-type').value;
+            state.questionCount = parseInt(document.getElementById('input-count').value) || 10;
+            state.phase = document.getElementById('select-phase').value;
+            state.grade = document.getElementById('select-grade').value;
+            
+            const approachRadios = document.getElementsByName('approach');
+            for (let r of approachRadios) {
+                if (r.checked) state.curriculumApproach = r.value;
+            }
+
+            const checkedBlooms = [];
+            document.querySelectorAll('input[type="checkbox"][value^="C"]:checked').forEach(c => checkedBlooms.push(c.value));
+            state.bloomsTaxonomy = checkedBlooms;
+
+            const isEn = state.currentLang === 'en';
+
+            const masterPrompt = `ACT AS AN EXPERT CURRICULUM & ASSESSMENT SPECIALIST IN INDONESIA (KURIKULUM MERDEKA).
+GENERATE A HIGH-QUALITY, PEDAGOGICALLY RIGOROUS SUMMATIVE ASSESSMENT PAPER (NASKAH SOAL ASESMEN SUMATIF).
+
+=== EDUCATIONAL CONTEXT METADATA ===
+- Education Level: ${state.educationLevel}
+- Merdeka Phase: ${state.phase}
+- Grade / Class: ${state.grade}
+- Subject: ${state.subject}
+- Theme / Topic: ${state.topic}
+- Learning Objectives (TP): ${state.learningObjectives}
+- Output Language: ${isEn ? "English" : "Bahasa Indonesia"}
+
+=== PEDAGOGICAL & CURRICULUM FRAMEWORK INTEGRATION ===
+1. DEEP LEARNING PILLARS:
+   - Mindful Learning: Contextualized stimulus that invites careful observation and awareness.
+   - Meaningful Learning: Connects academic theory to real-world applications and authentic problems.
+   - Joyful Learning: Engaging presentation, encouraging intrinsic curiosity.
+
+2. CINTA CURRICULUM (HOLISTIC ECOTHEOLOGY APPROACH):
+   Integrate items reflecting 5 Dimensions of CINTA:
+   - Love for God (Cinta Tuhan): Gratitude for nature and order of creation.
+   - Love for Humanity (Cinta Sesama): Empathy, teamwork, social ethics.
+   - Love for Knowledge (Cinta Ilmu): Scientific curiosity, critical inquiry.
+   - Love for Environment / Ecotheology (Cinta Alam): Ecological stewardship, conservation, sustainability.
+   - Love for Nation (Cinta Bangsa): Local Indonesian context and national profile.
+
+3. ASSESSMENT SPECIFICATIONS:
+   - Total Questions: ${state.questionCount} items
+   - Primary Format: ${state.questionType}
+   - Cognitive Levels Target (Bloom): ${state.bloomsTaxonomy.join(', ')}
+   - Difficulty Distribution: Easy ${state.difficulty.easy}%, Medium ${state.difficulty.medium}%, Hard/HOTS ${state.difficulty.hard}%
+
+${state.fileContext.text ? `=== ATTACHED REFERENCE MATERIAL CONTEXT ===\n${state.fileContext.text.slice(0, 3000)}\n` : ''}
+
+=== REQUIRED OUTPUT STRUCTURE (MARKDOWN FORMAT) ===
+# NASKAH SOAL ASESMEN SUMATIF KURIKULUM MERDEKA
+**Mata Pelajaran:** ${state.subject} | **Kelas/Fase:** ${state.grade} (${state.phase})
+**Topik:** ${state.topic}
+**Pendekatan:** Deep Learning & CINTA Ecotheology
+
+---
+
+### I. PETUNJUK UMUM (GENERAL INSTRUCTIONS)
+[Include clear, encouraging instructions for students]
+
+### II. NASKAH SOAL (ASSESSMENT ITEMS)
+[Generate ${state.questionCount} numbered assessment questions with contextual stimulus (graphs/scenarios/stories) integrating Deep Learning & CINTA ecotheology values]
+
+${document.getElementById('chk-key').checked ? '### III. KUNCI JAWABAN & PEMBAHASAN LOGIS (ANSWER KEY & EXPLANATIONS)\n[Provide clear correct answers with step-by-step educational explanations for each question item]' : ''}
+
+${document.getElementById('chk-rubric').checked ? '### IV. RUBRIK PENILAIAN & PEDOMAN PENSKORAN (SCORING RUBRIC)\n[Table of scoring criteria, score ranges, and performance descriptors]' : ''}
+
+${document.getElementById('chk-mapping').checked ? '### V. MATRIKS PEMETAAN PROFIL PANCASILA & DIMENSI CINTA\n[Table mapping Question Number -> Bloom Cognitive Level -> Deep Learning Pillar -> CINTA Dimension]' : ''}
+`;
+
+            state.generatedPromptText = masterPrompt;
+            document.getElementById('prompt-output-box').value = masterPrompt;
+            switchTab('prompt');
+        }
+
+        function copyMasterPrompt() {
+            const copyText = document.getElementById('prompt-output-box');
+            copyText.select();
+            document.execCommand('copy');
+            alert(state.currentLang === 'en' ? "Master Prompt copied to clipboard!" : "Master Prompt berhasil disalin ke clipboard!");
+        }
+
+
+        async function executeGeminiAI() {
+            if (!state.generatedPromptText) {
+                generateMasterPrompt();
+            }
+
+            const resultContainer = document.getElementById('result-container');
+            const resultBody = document.getElementById('markdown-result-body');
+
+            resultContainer.classList.remove('hidden');
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+            resultBody.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 space-y-4">
+                    <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="font-bold text-slate-700 dark:text-slate-300 text-sm">
+                        ${state.currentLang === 'en' ? 'Generating Summative Assessment via Gemini 3 Flash AI...' : 'Generating Soal Sumatif via AI Gemini 3 Flash...'}
+                    </p>
+                    <p class="text-xs text-slate-400">Integrating Mindful, Meaningful, Joyful & CINTA Ecotheology framework...</p>
+                </div>
+            `;
+
+            const apiKey = state.customApiKey || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: state.generatedPromptText }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: "You are an expert assessment specialist for Kurikulum Merdeka in Indonesia. Format output clearly in Markdown with headers, bold text, tables, and nicely structured question items." }]
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (outputText) {
+                    state.generatedResultText = outputText;
+                    resultBody.innerHTML = marked.parse(outputText);
+                } else {
+                    resultBody.innerHTML = `
+                        <div class="p-4 bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 rounded-xl text-xs font-mono">
+                            Error generating content. Response payload structure: ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                resultBody.innerHTML = `
+                    <div class="p-4 bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 rounded-xl text-xs font-mono">
+                        Network / API Error: ${err.message}. Please verify your API Key in settings or connection.
+                    </div>
+                `;
+            }
+        }
+
+        function copyGeneratedResult() {
+            if (!state.generatedResultText) return;
+            const textToCopy = state.generatedResultText;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = textToCopy;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            alert(state.currentLang === 'en' ? "Assessment result script copied!" : "Naskah soal berhasil disalin!");
+        }
+
+        function printAssessmentDocument() {
+            window.print();
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('input-api-key').value;
+            state.customApiKey = key;
+            alert(state.currentLang === 'en' ? "API Key saved!" : "Kunci API berhasil disimpan!");
+        }
+
+
+        function loadSamplePreset(type) {
+            if (type === 'science') {
+                setEducationLevel('SMP');
+                document.getElementById('input-subject').value = "IPA / Ilmu Pengetahuan Alam";
+                document.getElementById('input-topic').value = "Fotosintesis, Ekosistem & Kelestarian Lingkungan";
+                document.getElementById('input-tp').value = "Peserta didik mampu menganalisis proses fotosintesis, keterkaitannya dengan siklus oksigen, serta merancang tindakan nyata menjaga kelestarian tumbuhan sebagai wujud rasa syukur dan cinta terhadap lingkungan ciptaan Tuhan.";
+            } else if (type === 'english') {
+                setEducationLevel('SMA');
+                document.getElementById('input-subject').value = "English";
+                document.getElementById('input-topic').value = "Analytical Exposition Text on Environmental Ethics";
+                document.getElementById('input-tp').value = "Students are able to analyze the thesis, arguments, and reiteration in analytical exposition texts concerning ecological challenges, and formulate written arguments advocating for green initiatives.";
+            }
+            switchTab('dashboard');
+        }
+
+        // ON INIT
+        window.onload = function() {
+            setLanguage('id');
+        };
+    </script>
+</body>
+</html>
